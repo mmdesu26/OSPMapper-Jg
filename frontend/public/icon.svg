@@ -1,0 +1,10 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="30" fill="#0D0F10"/>
+  <path d="M27 83C27 59.252 46.252 40 70 40H93" stroke="#FF6A3D" stroke-width="12" stroke-linecap="round"/>
+  <path d="M35 88L35 56C35 50.477 39.477 46 45 46H77" stroke="#A8B0B3" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="35" cy="88" r="11" fill="#FF6A3D" stroke="white" stroke-width="4"/>
+  <circle cx="77" cy="46" r="9" fill="#FF6A3D" stroke="white" stroke-width="4"/>
+  <circle cx="93" cy="40" r="9" fill="#FF6A3D" stroke="white" stroke-width="4"/>
+  <path d="M30 103H98" stroke="white" stroke-opacity="0.25" stroke-width="5" stroke-linecap="round"/>
+  <text x="64" y="28" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="14" font-weight="800" fill="white">JAGONET</text>
+</svg>
