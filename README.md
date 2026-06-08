@@ -1,8 +1,8 @@
-# OSP Mapper
+# OSP Mapper Jagonet
 
-OSP Mapper adalah aplikasi web untuk manajemen aset infrastruktur jaringan optik berbasis peta. Sistem ini digunakan untuk mencatat, mengelola, dan memvisualisasikan data aset seperti ODC, ODP, JC, tiang, dan kabel fiber optik melalui tampilan dashboard dan peta interaktif.
+OSP Mapper Jagonet adalah aplikasi web untuk mengelola, memetakan, dan memantau aset infrastruktur jaringan fiber optik. Sistem ini digunakan untuk mencatat data Site, ODC, ODP, Joint Closure, Tiang, Kabel, serta core kabel. Data aset ditampilkan dalam bentuk dashboard, tabel manajemen data, dan peta interaktif.
 
-Versi proyek ini disesuaikan agar dapat dijalankan secara lokal di Windows menggunakan VS Code dan MySQL dari XAMPP tanpa Docker.
+Sistem terdiri dari dua bagian utama, yaitu backend berbasis NestJS dan frontend berbasis Next.js. Backend berfungsi sebagai penyedia REST API, autentikasi, validasi data, koneksi database, dan dokumentasi API. Frontend berfungsi sebagai antarmuka pengguna untuk login, dashboard, pengelolaan aset, dan visualisasi peta.
 
 ---
 
@@ -12,82 +12,103 @@ Versi proyek ini disesuaikan agar dapat dijalankan secara lokal di Windows mengg
 2. [Fitur Utama](#fitur-utama)
 3. [Teknologi yang Digunakan](#teknologi-yang-digunakan)
 4. [Struktur Folder](#struktur-folder)
-5. [Penjelasan Modul](#penjelasan-modul)
+5. [Modul Sistem](#modul-sistem)
 6. [Alur Kerja Sistem](#alur-kerja-sistem)
-7. [Persyaratan Instalasi](#persyaratan-instalasi)
-8. [Konfigurasi Database MySQL XAMPP](#konfigurasi-database-mysql-xampp)
+7. [Validasi Data dan Notifikasi](#validasi-data-dan-notifikasi)
+8. [Persyaratan Instalasi](#persyaratan-instalasi)
 9. [Konfigurasi Environment](#konfigurasi-environment)
-10. [Cara Menjalankan Backend](#cara-menjalankan-backend)
-11. [Cara Menjalankan Frontend](#cara-menjalankan-frontend)
-12. [Akses Aplikasi](#akses-aplikasi)
-13. [Akun Login Default](#akun-login-default)
-14. [Dokumentasi API](#dokumentasi-api)
-15. [Perintah yang Sering Dipakai](#perintah-yang-sering-dipakai)
+10. [Menjalankan Sistem Secara Lokal](#menjalankan-sistem-secara-lokal)
+11. [Akses Aplikasi](#akses-aplikasi)
+12. [Akun Login Default](#akun-login-default)
+13. [Endpoint API](#endpoint-api)
+14. [Menjalankan Sistem dengan Docker](#menjalankan-sistem-dengan-docker)
+15. [Perintah yang Sering Digunakan](#perintah-yang-sering-digunakan)
 16. [Troubleshooting](#troubleshooting)
-17. [Catatan Deployment](#catatan-deployment)
-18. [File yang Boleh Diabaikan](#file-yang-boleh-diabaikan)
+17. [Catatan Pengembangan](#catatan-pengembangan)
 
 ---
 
 ## Deskripsi Sistem
 
-OSP Mapper merupakan sistem manajemen aset jaringan optik yang membantu pengguna dalam mengelola data infrastruktur secara terpusat. Sistem ini menyediakan fitur pencatatan aset, pengelolaan data teknis, autentikasi pengguna, dashboard ringkasan, serta visualisasi lokasi aset melalui peta digital.
+OSP Mapper Jagonet membantu pengelola jaringan dalam mendata aset fiber optik secara terpusat. Setiap aset memiliki informasi teknis, lokasi koordinat, status, relasi site, serta catatan tambahan. Sistem juga menyediakan peta interaktif untuk melihat persebaran aset dan jalur kabel secara visual.
 
-Sistem terdiri dari dua bagian utama:
+Aset yang dikelola meliputi:
 
-| Bagian | Keterangan |
+| Aset | Keterangan |
 |---|---|
-| Backend | API server berbasis NestJS untuk autentikasi, pengolahan data, dan koneksi database |
-| Frontend | Antarmuka web berbasis Next.js untuk dashboard, halaman login, halaman data aset, dan peta |
-
-Pada versi lokal ini, database menggunakan MySQL dari XAMPP agar lebih mudah dijalankan di Windows tanpa Docker.
+| Site | Area atau lokasi utama pengelolaan aset jaringan |
+| ODC | Optical Distribution Cabinet |
+| ODP | Optical Distribution Point |
+| JC | Joint Closure atau titik sambungan kabel |
+| Tiang | Tiang atau pole jaringan |
+| Kabel | Jalur kabel fiber optik beserta data core |
+| Core Kabel | Detail core pada setiap kabel, seperti used, spare, broken, dan reserved |
 
 ---
 
 ## Fitur Utama
 
-- Autentikasi pengguna menggunakan JWT.
-- Dashboard ringkasan data aset.
+- Login pengguna menggunakan JWT.
+- Proteksi halaman dan API menggunakan token autentikasi.
+- Dashboard ringkasan aset jaringan.
+- Statistik jumlah Site, ODC, ODP, JC, Tiang, Kabel, dan Core.
+- Grafik jumlah aset berdasarkan site.
+- Filter grafik berdasarkan semua data, 1 bulan, 2 bulan, dan 3 bulan terakhir.
+- Manajemen data Site.
 - Manajemen data ODC.
-- Manajemen data ODP.
-- Manajemen data JC.
-- Manajemen data tiang.
-- Manajemen data kabel fiber optik.
-- Visualisasi aset pada peta interaktif.
-- REST API untuk komunikasi frontend dan backend.
-- Dokumentasi API melalui Swagger.
-- Penyimpanan data menggunakan MySQL.
-- Antarmuka modern menggunakan Next.js dan Tailwind CSS.
+- Manajemen data ODP beserta port pelanggan.
+- Manajemen data Joint Closure.
+- Manajemen data Tiang.
+- Manajemen data Kabel.
+- Manajemen core kabel.
+- Peta interaktif berbasis Leaflet.
+- Layer peta untuk ODC, ODP, JC, Tiang, dan Kabel.
+- Mode gambar jalur kabel langsung dari peta.
+- Perhitungan otomatis panjang kabel berdasarkan titik jalur.
+- Pilihan tampilan peta OpenStreetMap dan satelit.
+- Pencarian dan filter data pada halaman aset.
+- Soft delete melalui kolom `deleted_at`.
+- Swagger API Documentation.
+- Notifikasi berhasil, gagal, dan error menggunakan toast.
 
 ---
 
 ## Teknologi yang Digunakan
 
-| Layer | Teknologi |
+| Bagian | Teknologi |
 |---|---|
-| Frontend | Next.js, React, TypeScript, Tailwind CSS, Leaflet |
-| Backend | NestJS, TypeScript, TypeORM |
-| Database | MySQL / MariaDB dari XAMPP |
-| Autentikasi | JWT, Passport |
-| API Client | Axios |
+| Frontend | Next.js 14, React 18, TypeScript |
+| Styling | Tailwind CSS |
+| State dan Data Fetching | TanStack React Query, Zustand |
+| HTTP Client | Axios |
+| Peta | Leaflet, React Leaflet |
+| Grafik | Recharts |
+| Notifikasi | React Hot Toast |
+| Backend | NestJS 10, TypeScript |
+| ORM | TypeORM |
+| Database | MySQL atau MariaDB |
+| Autentikasi | JWT, Passport JWT, bcryptjs |
+| Validasi | class-validator, ValidationPipe |
 | Dokumentasi API | Swagger |
-| Package Manager | npm |
-| Editor | Visual Studio Code |
-
-Catatan: dokumentasi awal proyek masih menyebut PostgreSQL, PostGIS, Redis, MinIO, Docker, dan Nginx. Pada versi lokal ini, bagian tersebut tidak wajib digunakan karena proyek sudah diarahkan untuk berjalan dengan MySQL XAMPP.
+| Deployment Opsional | Docker, Docker Compose, Nginx |
 
 ---
 
 ## Struktur Folder
 
 ```text
-osp-mapper/
+kode/
 ├── backend/
 │   ├── src/
 │   │   ├── common/
+│   │   │   ├── base.entity.ts
+│   │   │   ├── filters/
+│   │   │   └── interceptors/
 │   │   ├── database/
+│   │   │   └── database.module.ts
 │   │   ├── modules/
 │   │   │   ├── auth/
+│   │   │   ├── site/
 │   │   │   ├── odc/
 │   │   │   ├── odp/
 │   │   │   ├── jc/
@@ -96,48 +117,59 @@ osp-mapper/
 │   │   │   └── map/
 │   │   ├── app.module.ts
 │   │   └── main.ts
+│   ├── Dockerfile
 │   ├── package.json
-│   ├── package-lock.json
-│   ├── tsconfig.json
 │   ├── nest-cli.json
-│   └── .env
+│   └── tsconfig.json
 │
 ├── frontend/
 │   ├── src/
 │   │   ├── app/
+│   │   │   ├── dashboard/
+│   │   │   ├── site/
+│   │   │   ├── odc/
+│   │   │   ├── odp/
+│   │   │   ├── jc/
+│   │   │   ├── tiang/
+│   │   │   ├── kabel/
+│   │   │   ├── map/
+│   │   │   └── (auth)/login/
 │   │   ├── components/
-│   │   ├── hooks/
-│   │   ├── lib/
-│   │   ├── stores/
-│   │   └── types/
+│   │   │   ├── Layout/
+│   │   │   ├── Common/
+│   │   │   └── Map/
+│   │   └── lib/
+│   │       ├── api.ts
+│   │       └── confirmAction.tsx
+│   ├── Dockerfile
 │   ├── package.json
-│   ├── package-lock.json
-│   ├── next.config.ts
-│   ├── tsconfig.json
-│   ├── tailwind.config.ts
-│   ├── postcss.config.mjs
-│   └── .env.local
+│   ├── next.config.mjs
+│   └── tailwind.config.ts
 │
-├── README.md
+├── scripts/
+│   └── restart-nginx.sh
+├── docker-compose.yml
+├── fix.sh
 ├── .gitignore
-└── .env.example
+└── README.md
 ```
 
 ---
 
-## Penjelasan Modul
+## Modul Sistem
 
 ### 1. Auth
 
-Modul `auth` digunakan untuk proses autentikasi pengguna.
+Modul Auth digunakan untuk autentikasi pengguna.
 
-Fungsi utama:
+Fitur:
 
-- Login pengguna.
+- Login menggunakan email dan password.
+- Pembuatan access token dan refresh token.
+- Penyimpanan hash refresh token.
 - Logout pengguna.
-- Mengambil profil pengguna.
-- Membuat dan memvalidasi token JWT.
-- Melindungi endpoint tertentu agar hanya bisa diakses oleh pengguna yang sudah login.
+- Pengambilan profil pengguna.
+- Proteksi endpoint menggunakan `JwtAuthGuard`.
 
 Endpoint utama:
 
@@ -149,155 +181,299 @@ Endpoint utama:
 
 ---
 
-### 2. ODC
+### 2. Site
 
-Modul `odc` digunakan untuk mengelola data Optical Distribution Cabinet.
+Modul Site digunakan untuk mengelola lokasi atau area utama aset jaringan.
 
-Fungsi utama:
+Data utama:
+
+- `kode_site`
+- `nama_site`
+- `kota`
+- `provinsi`
+- `latitude`
+- `longitude`
+- `status`
+- `catatan`
+
+Fitur:
+
+- Menampilkan daftar site.
+- Mencari site berdasarkan kode, nama, atau kota.
+- Menambahkan site.
+- Mengubah site.
+- Menghapus site secara soft delete.
+- Menyediakan data pilihan site untuk modul lain.
+
+Endpoint utama:
+
+| Method | Endpoint | Keterangan |
+|---|---|---|
+| GET | `/api/v1/site` | Menampilkan daftar site |
+| GET | `/api/v1/site/:id` | Menampilkan detail site |
+| POST | `/api/v1/site` | Menambahkan site |
+| PATCH | `/api/v1/site/:id` | Mengubah site |
+| DELETE | `/api/v1/site/:id` | Menghapus site |
+
+---
+
+### 3. ODC
+
+Modul ODC digunakan untuk mengelola Optical Distribution Cabinet.
+
+Data utama:
+
+- `kode_odc`
+- `nama_odc`
+- `site_id`
+- `latitude`
+- `longitude`
+- `alamat`
+- `kapasitas_port`
+- `port_terpakai`
+- `jenis_splitter`
+- `status`
+- `foto_url`
+- `catatan`
+
+Fitur:
 
 - Menampilkan daftar ODC.
-- Menampilkan detail ODC.
-- Menambahkan data ODC.
-- Mengubah data ODC.
-- Menghapus data ODC.
+- Mencari ODC berdasarkan kode atau nama.
+- Filter berdasarkan status dan site.
+- Menambahkan ODC.
+- Mengubah ODC.
+- Menghapus ODC secara soft delete.
 - Menampilkan statistik ODC.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/odc` | Menampilkan semua data ODC |
+| GET | `/api/v1/odc` | Menampilkan daftar ODC |
 | GET | `/api/v1/odc/stats` | Menampilkan statistik ODC |
 | GET | `/api/v1/odc/:id` | Menampilkan detail ODC |
-| POST | `/api/v1/odc` | Menambahkan data ODC |
-| PATCH | `/api/v1/odc/:id` | Mengubah data ODC |
-| DELETE | `/api/v1/odc/:id` | Menghapus data ODC |
+| POST | `/api/v1/odc` | Menambahkan ODC |
+| PATCH | `/api/v1/odc/:id` | Mengubah ODC |
+| DELETE | `/api/v1/odc/:id` | Menghapus ODC |
 
 ---
 
-### 3. ODP
+### 4. ODP
 
-Modul `odp` digunakan untuk mengelola data Optical Distribution Point.
+Modul ODP digunakan untuk mengelola Optical Distribution Point dan data port pelanggan.
 
-Fungsi utama:
+Data utama:
+
+- `kode_odp`
+- `nama_odp`
+- `site_id`
+- `parent_odc_id`
+- `latitude`
+- `longitude`
+- `alamat`
+- `kapasitas_port`
+- `port_terpakai`
+- `status`
+- `foto_url`
+- `catatan`
+- data pelanggan pada port ODP
+
+Fitur:
 
 - Menampilkan daftar ODP.
-- Menampilkan detail ODP.
-- Menambahkan data ODP.
-- Mengubah data ODP.
-- Menghapus data ODP.
+- Mencari ODP berdasarkan kode atau nama.
+- Filter berdasarkan status, site, dan ODC induk.
+- Menambahkan ODP.
+- Mengubah ODP.
+- Menghapus ODP secara soft delete.
+- Sinkronisasi port ODP.
+- Perhitungan otomatis jumlah port terpakai.
+- Perhitungan ulang penggunaan port pada ODC induk.
 - Menampilkan statistik ODP.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/odp` | Menampilkan semua data ODP |
+| GET | `/api/v1/odp` | Menampilkan daftar ODP |
 | GET | `/api/v1/odp/stats` | Menampilkan statistik ODP |
 | GET | `/api/v1/odp/:id` | Menampilkan detail ODP |
-| POST | `/api/v1/odp` | Menambahkan data ODP |
-| PATCH | `/api/v1/odp/:id` | Mengubah data ODP |
-| DELETE | `/api/v1/odp/:id` | Menghapus data ODP |
+| POST | `/api/v1/odp` | Menambahkan ODP |
+| PATCH | `/api/v1/odp/:id` | Mengubah ODP |
+| DELETE | `/api/v1/odp/:id` | Menghapus ODP |
 
 ---
 
-### 4. JC
+### 5. Joint Closure
 
-Modul `jc` digunakan untuk mengelola data Junction Cabinet atau Joint Closure.
+Modul Joint Closure digunakan untuk mengelola titik sambungan kabel.
 
-Fungsi utama:
+Data utama:
 
-- Menampilkan daftar JC.
-- Menampilkan detail JC.
-- Menambahkan data JC.
-- Mengubah data JC.
-- Menghapus data JC.
+- `kode_jc`
+- `tipe_jc`
+- `site_id`
+- `latitude`
+- `longitude`
+- `jumlah_core_in`
+- `jumlah_core_out`
+- `splice_mapping`
+- `splice_connections`
+- `foto_url`
+- `catatan`
+
+Fitur:
+
+- Menampilkan daftar Joint Closure.
+- Mencari data berdasarkan kode atau tipe.
+- Filter berdasarkan site.
+- Menambahkan Joint Closure.
+- Mengubah Joint Closure.
+- Menghapus Joint Closure secara soft delete.
+- Menyimpan data sambungan atau splice dalam bentuk JSON.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/jc` | Menampilkan semua data JC |
-| GET | `/api/v1/jc/:id` | Menampilkan detail JC |
-| POST | `/api/v1/jc` | Menambahkan data JC |
-| PATCH | `/api/v1/jc/:id` | Mengubah data JC |
-| DELETE | `/api/v1/jc/:id` | Menghapus data JC |
+| GET | `/api/v1/jc` | Menampilkan daftar Joint Closure |
+| GET | `/api/v1/jc/:id` | Menampilkan detail Joint Closure |
+| POST | `/api/v1/jc` | Menambahkan Joint Closure |
+| PATCH | `/api/v1/jc/:id` | Mengubah Joint Closure |
+| DELETE | `/api/v1/jc/:id` | Menghapus Joint Closure |
 
 ---
 
-### 5. Tiang
+### 6. Tiang
 
-Modul `tiang` digunakan untuk mengelola data tiang jaringan.
+Modul Tiang digunakan untuk mengelola data tiang jaringan.
 
-Fungsi utama:
+Data utama:
+
+- `kode_tiang`
+- `nomor_tiang`
+- `site_id`
+- `jenis_tiang`
+- `tinggi_meter`
+- `harga_per_unit`
+- `latitude`
+- `longitude`
+- `status`
+- `foto_url`
+- `catatan`
+
+Fitur:
 
 - Menampilkan daftar tiang.
-- Menampilkan detail tiang.
-- Menambahkan data tiang.
-- Mengubah data tiang.
-- Menghapus data tiang.
+- Mencari tiang berdasarkan kode atau nomor tiang.
+- Filter berdasarkan status dan site.
+- Menambahkan tiang.
+- Mengubah tiang.
+- Menghapus tiang secara soft delete.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/tiang` | Menampilkan semua data tiang |
+| GET | `/api/v1/tiang` | Menampilkan daftar tiang |
 | GET | `/api/v1/tiang/:id` | Menampilkan detail tiang |
-| POST | `/api/v1/tiang` | Menambahkan data tiang |
-| PATCH | `/api/v1/tiang/:id` | Mengubah data tiang |
-| DELETE | `/api/v1/tiang/:id` | Menghapus data tiang |
+| POST | `/api/v1/tiang` | Menambahkan tiang |
+| PATCH | `/api/v1/tiang/:id` | Mengubah tiang |
+| DELETE | `/api/v1/tiang/:id` | Menghapus tiang |
 
 ---
 
-### 6. Kabel
+### 7. Kabel dan Core Kabel
 
-Modul `kabel` digunakan untuk mengelola data kabel fiber optik beserta core kabel.
+Modul Kabel digunakan untuk mengelola jalur kabel fiber optik beserta core kabel.
 
-Fungsi utama:
+Data utama kabel:
+
+- `kode_kabel`
+- `nama_kabel`
+- `site_id`
+- `jenis_kabel`
+- `jumlah_core`
+- `core_terpakai`
+- `panjang_meter`
+- `harga_per_meter`
+- `source_type`
+- `source_id`
+- `dest_type`
+- `dest_id`
+- `warna_kabel`
+- `route_points`
+- `status`
+- `catatan`
+
+Data utama core kabel:
+
+- `core_number`
+- `warna_tube`
+- `warna_core`
+- `status`
+- `service_ref`
+- `catatan`
+
+Fitur:
 
 - Menampilkan daftar kabel.
-- Menampilkan detail kabel.
-- Menambahkan data kabel.
-- Mengubah data kabel.
-- Menghapus data kabel.
-- Mengelola core kabel.
+- Mencari kabel berdasarkan kode atau nama.
+- Filter berdasarkan status dan site.
+- Menambahkan kabel.
+- Mengubah kabel.
+- Menghapus kabel secara soft delete.
+- Membuat data core otomatis berdasarkan `jumlah_core` saat kabel dibuat.
+- Menampilkan daftar core kabel.
+- Mengubah status core kabel.
+- Menghitung ulang jumlah core terpakai.
+- Menyimpan jalur kabel dalam bentuk `route_points` JSON.
+- Menggambar jalur kabel langsung dari halaman peta.
+- Menghitung panjang kabel berdasarkan titik koordinat jalur.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/kabel` | Menampilkan semua data kabel |
+| GET | `/api/v1/kabel` | Menampilkan daftar kabel |
 | GET | `/api/v1/kabel/:id` | Menampilkan detail kabel |
-| GET | `/api/v1/kabel/:id/core` | Menampilkan data core kabel |
-| POST | `/api/v1/kabel` | Menambahkan data kabel |
-| PATCH | `/api/v1/kabel/:id` | Mengubah data kabel |
+| GET | `/api/v1/kabel/:id/core` | Menampilkan core kabel |
+| POST | `/api/v1/kabel` | Menambahkan kabel |
+| PATCH | `/api/v1/kabel/:id` | Mengubah kabel |
 | PATCH | `/api/v1/kabel/:id/core/:num` | Mengubah core kabel |
-| DELETE | `/api/v1/kabel/:id` | Menghapus data kabel |
+| DELETE | `/api/v1/kabel/:id` | Menghapus kabel |
 
 ---
 
-### 7. Map
+### 8. Map
 
-Modul `map` digunakan untuk menampilkan data aset ke dalam bentuk peta.
+Modul Map digunakan untuk menampilkan aset jaringan ke dalam peta interaktif.
 
-Fungsi utama:
+Fitur:
 
-- Mengambil semua aset untuk ditampilkan pada peta.
-- Menampilkan data dashboard.
-- Menggabungkan data ODC, ODP, JC, tiang, dan kabel untuk visualisasi.
+- Menampilkan aset ODC, ODP, JC, Tiang, dan Kabel pada peta.
+- Menampilkan jalur kabel sebagai garis.
+- Menampilkan titik aset sebagai marker.
+- Mengaktifkan atau menonaktifkan layer aset.
+- Menggambar jalur kabel baru melalui klik pada peta.
+- Melakukan undo titik jalur kabel.
+- Reset titik jalur kabel.
+- Menyimpan jalur kabel dari peta.
+- Menampilkan ringkasan dashboard.
 
 Endpoint utama:
 
 | Method | Endpoint | Keterangan |
 |---|---|---|
-| GET | `/api/v1/map/assets` | Menampilkan aset untuk peta |
-| GET | `/api/v1/map/dashboard` | Menampilkan data dashboard |
+| GET | `/api/v1/map/assets` | Mengambil seluruh aset untuk peta |
+| GET | `/api/v1/map/dashboard` | Mengambil data ringkasan dashboard |
 
 ---
 
 ## Alur Kerja Sistem
 
-Alur kerja sistem secara umum:
+Alur umum sistem:
 
 ```text
 Pengguna
@@ -310,7 +486,7 @@ Backend NestJS
    ↓
 TypeORM
    ↓
-Database MySQL XAMPP
+Database MySQL
 ```
 
 Alur login:
@@ -322,61 +498,128 @@ Frontend mengirim request ke /api/v1/auth/login
    ↓
 Backend memvalidasi akun
    ↓
-Backend mengirim JWT token
+Backend membuat access token dan refresh token
    ↓
-Frontend menyimpan token
+Frontend menyimpan token pada localStorage
+   ↓
+Token dikirim pada header Authorization
    ↓
 Pengguna dapat mengakses dashboard dan fitur aset
 ```
+
+Alur tambah data aset:
+
+```text
+Pengguna membuka halaman aset
+   ↓
+Pengguna mengisi form tambah data
+   ↓
+Frontend mengirim data ke backend
+   ↓
+Backend melakukan validasi dan penyimpanan data
+   ↓
+Frontend memperbarui daftar data
+   ↓
+Toast berhasil atau gagal ditampilkan
+```
+
+Alur pembuatan jalur kabel dari peta:
+
+```text
+Pengguna membuka halaman Map
+   ↓
+Pengguna mengaktifkan mode gambar jalur
+   ↓
+Pengguna klik titik-titik jalur pada peta
+   ↓
+Sistem menghitung panjang kabel otomatis
+   ↓
+Pengguna mengisi data kabel
+   ↓
+Sistem menyimpan data kabel dan route_points
+   ↓
+Jalur kabel tampil pada peta
+```
+
+---
+
+## Validasi Data dan Notifikasi
+
+### Validasi Backend
+
+Backend menggunakan `ValidationPipe` untuk validasi request dan `GlobalExceptionFilter` untuk menyeragamkan format error.
+
+Format response berhasil:
+
+```json
+{
+  "status": "success",
+  "data": {}
+}
+```
+
+Format response gagal:
+
+```json
+{
+  "status": "error",
+  "statusCode": 400,
+  "message": "Pesan error",
+  "path": "/api/v1/..."
+}
+```
+
+Validasi duplikasi data dilakukan melalui pengecekan kode unik pada beberapa modul. Jika kode sudah digunakan, backend mengirim error `ConflictException`.
+
+Contoh pesan error:
+
+```text
+Kode SITE001 sudah ada
+Kode ODC001 sudah ada
+Kode ODP001 sudah ada
+Kode KBL001 sudah ada
+```
+
+Catatan pengembangan: jika sistem diwajibkan menolak nama yang sama, validasi nama seperti `nama_site`, `nama_odc`, `nama_odp`, `nama_kabel`, dan nomor/penamaan lain perlu ditambahkan pada service masing-masing modul.
+
+### Notifikasi Frontend
+
+Frontend menggunakan `react-hot-toast` untuk menampilkan notifikasi.
+
+Jenis notifikasi:
+
+| Kondisi | Contoh Pesan |
+|---|---|
+| Berhasil menyimpan | `Site berhasil disimpan` |
+| Berhasil memperbarui | `Site berhasil diperbarui` |
+| Berhasil menghapus | `Site berhasil dihapus` |
+| Gagal menyimpan | `Gagal menyimpan site` |
+| Gagal memperbarui | `Gagal memperbarui site` |
+| Gagal menghapus | `Gagal menghapus site` |
+| Login gagal | `Email atau password salah` |
+| Token habis | Pengguna diarahkan kembali ke halaman login |
+
+Setiap aksi tambah, ubah, hapus, login, penggambaran jalur, pembatalan titik, dan penyimpanan data perlu menampilkan alert berhasil atau gagal agar pengguna mendapatkan umpan balik yang jelas.
 
 ---
 
 ## Persyaratan Instalasi
 
-Sebelum menjalankan aplikasi, install beberapa software berikut:
+Sebelum menjalankan aplikasi secara lokal, siapkan perangkat berikut:
 
-1. Node.js LTS
-2. XAMPP
-3. Visual Studio Code
-4. Git, opsional jika proyek diambil dari repository
+1. Node.js LTS.
+2. npm.
+3. MySQL atau MariaDB.
+4. XAMPP, jika memakai MySQL lokal di Windows.
+5. Visual Studio Code.
+6. Git, opsional.
 
-Cek instalasi Node.js dan npm:
+Cek versi Node.js dan npm:
 
-```powershell
+```bash
 node -v
 npm -v
 ```
-
-Jika versi muncul, Node.js dan npm sudah terpasang.
-
----
-
-## Konfigurasi Database MySQL XAMPP
-
-1. Buka XAMPP Control Panel.
-2. Jalankan `Apache`.
-3. Jalankan `MySQL`.
-4. Buka phpMyAdmin melalui browser:
-
-```text
-http://localhost/phpmyadmin
-```
-
-5. Buat database baru dengan nama:
-
-```text
-osp_mapper
-```
-
-Atau jalankan query SQL berikut:
-
-```sql
-CREATE DATABASE IF NOT EXISTS osp_mapper
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_unicode_ci;
-```
-
-Database akan digunakan oleh backend melalui konfigurasi TypeORM.
 
 ---
 
@@ -384,7 +627,7 @@ Database akan digunakan oleh backend melalui konfigurasi TypeORM.
 
 ### Backend
 
-Buat atau cek file berikut:
+Buat file berikut:
 
 ```text
 backend/.env
@@ -404,19 +647,19 @@ DB_USER=root
 DB_PASS=
 DB_SYNC=true
 
-JWT_ACCESS_SECRET=local_access_secret_ganti_minimal_32_karakter
-JWT_REFRESH_SECRET=local_refresh_secret_ganti_minimal_32_karakter
+JWT_ACCESS_SECRET=local_access_secret_minimal_32_karakter
+JWT_REFRESH_SECRET=local_refresh_secret_minimal_32_karakter
 JWT_ACCESS_EXPIRE=15m
 JWT_REFRESH_EXPIRE=7d
 ```
 
-Jika MySQL XAMPP menggunakan password, ubah bagian berikut:
+Jika MySQL memakai password, isi bagian berikut:
 
 ```env
-DB_PASS=password_mysql_kamu
+DB_PASS=password_mysql
 ```
 
-Jika MySQL XAMPP tidak menggunakan password, biarkan kosong:
+Jika MySQL XAMPP tidak memakai password, biarkan kosong:
 
 ```env
 DB_PASS=
@@ -424,7 +667,7 @@ DB_PASS=
 
 ### Frontend
 
-Buat atau cek file berikut:
+Buat file berikut:
 
 ```text
 frontend/.env.local
@@ -436,75 +679,91 @@ Isi konfigurasi:
 NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
 ```
 
-Jika file `.env.local` diubah, matikan frontend dan jalankan ulang agar konfigurasi terbaca.
+Setelah file environment diubah, jalankan ulang backend atau frontend agar konfigurasi terbaca.
 
 ---
 
-## Cara Menjalankan Backend
+## Menjalankan Sistem Secara Lokal
 
-Buka terminal di VS Code, lalu masuk ke folder backend:
+### 1. Menyiapkan Database
 
-```powershell
+Buka MySQL atau phpMyAdmin, lalu buat database:
+
+```sql
+CREATE DATABASE IF NOT EXISTS osp_mapper
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+```
+
+Jika memakai XAMPP:
+
+1. Buka XAMPP Control Panel.
+2. Jalankan Apache.
+3. Jalankan MySQL.
+4. Buka `http://localhost/phpmyadmin`.
+5. Buat database `osp_mapper`.
+
+---
+
+### 2. Menjalankan Backend
+
+Masuk ke folder backend:
+
+```bash
 cd backend
 ```
 
 Install dependency:
 
-```powershell
+```bash
 npm install
 ```
 
-Jalankan backend:
+Jalankan backend mode development:
 
-```powershell
+```bash
 npm run start:dev
 ```
 
-Jika berhasil, terminal akan menampilkan pesan seperti:
+Jika berhasil, backend berjalan pada:
 
 ```text
-Nest application successfully started
-OSP Mapper Backend running on http://0.0.0.0:3001
-Swagger docs: http://0.0.0.0:3001/api/docs
+http://localhost:3001
 ```
 
-Backend dapat dicek melalui:
+Swagger tersedia pada:
 
 ```text
 http://localhost:3001/api/docs
 ```
 
-Terminal backend harus tetap terbuka selama aplikasi digunakan.
-
 ---
 
-## Cara Menjalankan Frontend
+### 3. Menjalankan Frontend
 
-Buka terminal baru di VS Code, lalu masuk ke folder frontend:
+Buka terminal baru, lalu masuk ke folder frontend:
 
-```powershell
+```bash
 cd frontend
 ```
 
 Install dependency:
 
-```powershell
+```bash
 npm install
 ```
 
 Jalankan frontend:
 
-```powershell
+```bash
 npm run dev
 ```
 
-Jika berhasil, buka aplikasi melalui:
+Frontend berjalan pada:
 
 ```text
 http://localhost:3000
 ```
-
-Terminal frontend harus tetap terbuka selama aplikasi digunakan.
 
 ---
 
@@ -513,6 +772,8 @@ Terminal frontend harus tetap terbuka selama aplikasi digunakan.
 | Layanan | URL |
 |---|---|
 | Frontend | `http://localhost:3000` |
+| Halaman Login | `http://localhost:3000/login` |
+| Dashboard | `http://localhost:3000/dashboard` |
 | Backend API | `http://localhost:3001/api/v1` |
 | Swagger API Docs | `http://localhost:3001/api/docs` |
 | phpMyAdmin | `http://localhost/phpmyadmin` |
@@ -521,84 +782,148 @@ Terminal frontend harus tetap terbuka selama aplikasi digunakan.
 
 ## Akun Login Default
 
-Saat backend pertama kali berjalan, sistem membuat akun admin default.
+Backend membuat role dan akun default saat database masih kosong.
 
-```text
-Email    : admin@ospmapper.id
-Password : Admin@12345
-```
+| Field | Nilai |
+|---|---|
+| Email | `admin@ospmapper-jagonet.id` |
+| Password | `Admin@12345` |
+| Role | `super_admin` |
 
-Setelah berhasil login, sebaiknya password diganti jika fitur ubah password tersedia.
+Catatan: akun default dibuat oleh `AuthService.seedDefaultData()` saat backend dijalankan pertama kali dan tabel role masih kosong.
 
 ---
 
-## Dokumentasi API
+## Endpoint API
 
-Backend menyediakan Swagger untuk melihat dan mencoba endpoint API.
+Semua endpoint utama menggunakan prefix:
 
-Buka:
+```text
+/api/v1
+```
+
+Endpoint yang membutuhkan login harus mengirim header:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+Ringkasan endpoint:
+
+| Modul | Endpoint |
+|---|---|
+| Auth | `/auth/login`, `/auth/logout`, `/auth/profile` |
+| Site | `/site`, `/site/:id` |
+| ODC | `/odc`, `/odc/stats`, `/odc/:id` |
+| ODP | `/odp`, `/odp/stats`, `/odp/:id` |
+| JC | `/jc`, `/jc/:id` |
+| Tiang | `/tiang`, `/tiang/:id` |
+| Kabel | `/kabel`, `/kabel/:id`, `/kabel/:id/core`, `/kabel/:id/core/:num` |
+| Map | `/map/assets`, `/map/dashboard` |
+
+Dokumentasi lengkap tersedia melalui Swagger:
 
 ```text
 http://localhost:3001/api/docs
 ```
 
-Contoh endpoint utama:
+---
 
-| Method | Endpoint | Keterangan |
-|---|---|---|
-| POST | `/api/v1/auth/login` | Login pengguna |
-| GET | `/api/v1/auth/profile` | Profil pengguna |
-| GET | `/api/v1/odc` | Data ODC |
-| GET | `/api/v1/odp` | Data ODP |
-| GET | `/api/v1/jc` | Data JC |
-| GET | `/api/v1/tiang` | Data tiang |
-| GET | `/api/v1/kabel` | Data kabel |
-| GET | `/api/v1/map/assets` | Data aset untuk peta |
-| GET | `/api/v1/map/dashboard` | Data dashboard |
+## Menjalankan Sistem dengan Docker
+
+Project menyediakan file `docker-compose.yml` untuk menjalankan beberapa service sekaligus.
+
+Service yang tersedia:
+
+| Service | Fungsi |
+|---|---|
+| nginx | Reverse proxy |
+| frontend | Aplikasi Next.js |
+| backend | API NestJS |
+| mysql | Database MySQL |
+| redis | Cache atau service pendukung |
+| minio | Object storage opsional |
+
+Jalankan Docker Compose:
+
+```bash
+docker compose up -d --build
+```
+
+Cek container:
+
+```bash
+docker compose ps
+```
+
+Lihat log backend:
+
+```bash
+docker compose logs -f backend
+```
+
+Matikan service:
+
+```bash
+docker compose down
+```
+
+Catatan: konfigurasi Docker dapat membutuhkan folder `infra/nginx/nginx.conf`. Jika folder tersebut belum tersedia, sesuaikan konfigurasi Nginx atau jalankan backend dan frontend secara lokal terlebih dahulu.
 
 ---
 
-## Perintah yang Sering Dipakai
+## Perintah yang Sering Digunakan
 
 ### Backend
 
-```powershell
+```bash
 cd backend
 npm install
 npm run start:dev
 npm run build
-npm run lint
+npm run start
 ```
 
 ### Frontend
 
-```powershell
+```bash
 cd frontend
 npm install
 npm run dev
 npm run build
+npm run start
 npm run lint
 ```
 
-### Menghentikan Server
+### Docker
 
-Tekan:
-
-```text
-Ctrl + C
+```bash
+docker compose up -d --build
+docker compose ps
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose down
 ```
-
-pada terminal backend atau frontend.
 
 ---
 
 ## Troubleshooting
 
-### 1. Backend tidak bisa konek database
+### 1. Frontend tidak bisa mengambil data backend
 
-Pastikan MySQL di XAMPP sudah aktif.
+Pastikan `frontend/.env.local` berisi URL backend yang benar:
 
-Cek konfigurasi berikut:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+```
+
+Jalankan ulang frontend setelah mengubah `.env.local`.
+
+---
+
+### 2. Backend gagal konek database
+
+Cek konfigurasi pada `backend/.env`:
 
 ```env
 DB_HOST=localhost
@@ -608,234 +933,89 @@ DB_USER=root
 DB_PASS=
 ```
 
-Jika muncul error `Unknown database 'osp_mapper'`, buat database terlebih dahulu di phpMyAdmin.
+Pastikan database sudah dibuat dan MySQL sedang berjalan.
 
 ---
 
-### 2. Login gagal
+### 3. Login gagal padahal akun benar
 
-Cek beberapa hal berikut:
+Kemungkinan penyebab:
 
-1. Backend masih berjalan.
-2. Frontend masih berjalan.
-3. Database `osp_mapper` sudah dibuat.
-4. File `frontend/.env.local` berisi:
+- Database belum tersinkronisasi.
+- Tabel role sudah berisi data, sehingga seed default tidak dijalankan ulang.
+- Password akun sudah berubah.
+- Backend belum dijalankan ulang setelah konfigurasi `.env` diubah.
 
-```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+Solusi cepat untuk development:
+
+1. Pastikan `DB_SYNC=true`.
+2. Gunakan database kosong.
+3. Jalankan ulang backend.
+4. Login dengan akun default.
+
+---
+
+### 4. Error token atau otomatis kembali ke login
+
+Frontend akan menghapus token dan mengarahkan pengguna ke `/login` jika API mengembalikan status `401` selain request login.
+
+Solusi:
+
+1. Login ulang.
+2. Pastikan token tersimpan di browser.
+3. Pastikan `JWT_ACCESS_SECRET` pada backend tidak berubah saat server berjalan.
+
+---
+
+### 5. Data tidak muncul di peta
+
+Pastikan data aset memiliki koordinat `latitude` dan `longitude`. Aset tanpa koordinat tidak dapat divisualisasikan dengan benar pada peta.
+
+---
+
+### 6. Jalur kabel tidak muncul
+
+Pastikan kolom `route_points` berisi array koordinat yang valid.
+
+Contoh format:
+
+```json
+[
+  { "latitude": -6.2000000, "longitude": 106.8166660 },
+  { "latitude": -6.2010000, "longitude": 106.8170000 }
+]
 ```
 
-5. Gunakan akun default:
+---
+
+### 7. Nama atau kode sudah ada
+
+Jika backend mengirim pesan seperti berikut:
 
 ```text
-admin@ospmapper.id
-Admin@12345
+Kode ODC001 sudah ada
 ```
+
+Artinya data dengan kode tersebut sudah tersimpan. Gunakan kode lain atau periksa data lama yang belum terhapus permanen.
 
 ---
 
-### 3. Port 3000 sudah digunakan
+## Catatan Pengembangan
 
-Gunakan salah satu cara berikut:
-
-1. Tutup aplikasi lain yang memakai port 3000.
-2. Matikan terminal frontend lama.
-3. Jalankan ulang frontend.
-
-Cek proses pada Windows PowerShell:
-
-```powershell
-netstat -ano | findstr :3000
-```
-
----
-
-### 4. Port 3001 sudah digunakan
-
-Cek proses pada Windows PowerShell:
-
-```powershell
-netstat -ano | findstr :3001
-```
-
-Jika ingin mematikan proses tertentu:
-
-```powershell
-taskkill /PID nomor_pid /F
-```
+- Backend menggunakan `synchronize` TypeORM sesuai nilai `DB_SYNC`.
+- Untuk production, sebaiknya gunakan migration dan set `DB_SYNC=false`.
+- Data dihapus menggunakan soft delete melalui kolom `deleted_at`.
+- API response diseragamkan oleh `TransformInterceptor`.
+- Error response diseragamkan oleh `GlobalExceptionFilter`.
+- Frontend menggunakan React Query untuk mengambil dan memperbarui data.
+- Token login disimpan pada `localStorage`.
+- Peta menggunakan komponen Leaflet yang dimuat secara dinamis agar tidak terjadi masalah SSR pada Next.js.
+- Validasi kode unik sudah ada pada service beberapa modul.
+- Validasi nama unik dapat ditambahkan pada service jika nama aset juga harus tidak boleh sama.
+- Setiap aksi penting sebaiknya memiliki toast sukses dan toast error agar pengguna selalu mendapatkan informasi hasil proses.
 
 ---
 
-### 5. Error `Access denied for user 'root'@'localhost'`
+## Ringkasan
 
-Sesuaikan password MySQL di `backend/.env`.
-
-Jika XAMPP tidak memakai password:
-
-```env
-DB_PASS=
-```
-
-Jika XAMPP memakai password:
-
-```env
-DB_PASS=password_mysql_kamu
-```
-
----
-
-### 6. Error `jsonb is not supported`
-
-Error ini muncul jika masih ada tipe data PostgreSQL.
-
-Cari di VS Code:
-
-```text
-jsonb
-```
-
-Ubah menjadi:
-
-```text
-json
-```
-
----
-
-### 7. Error `timestamptz is not supported`
-
-Error ini muncul jika masih ada tipe waktu PostgreSQL.
-
-Cari di VS Code:
-
-```text
-timestamptz
-```
-
-Ubah menjadi:
-
-```text
-timestamp
-```
-
----
-
-### 8. Frontend tidak membaca environment baru
-
-Matikan frontend:
-
-```text
-Ctrl + C
-```
-
-Jalankan ulang:
-
-```powershell
-npm run dev
-```
-
----
-
-### 9. Warning saat `npm install`
-
-Warning seperti `deprecated`, `funding`, atau `vulnerabilities` tidak selalu berarti error. Jika dependency berhasil dipasang dan aplikasi dapat berjalan, warning dapat diabaikan sementara.
-
-Jangan langsung menjalankan:
-
-```powershell
-npm audit fix --force
-```
-
-karena perintah tersebut dapat mengubah versi package besar-besaran dan menyebabkan aplikasi error.
-
----
-
-## Catatan Deployment
-
-Dokumentasi awal proyek menyediakan opsi deployment menggunakan Docker, Nginx, SSL, dan server Ubuntu. Bagian tersebut dapat digunakan jika aplikasi ingin dipasang ke VPS atau server production.
-
-Untuk kebutuhan lokal Windows, Docker tidak wajib digunakan.
-
-Jika ingin deploy ke VPS tanpa Docker, konsep umumnya:
-
-1. Build frontend dengan `npm run build`.
-2. Build backend dengan `npm run build`.
-3. Jalankan backend menggunakan PM2.
-4. Jalankan frontend menggunakan `npm run start` atau deploy ke platform frontend.
-5. Gunakan Nginx sebagai reverse proxy.
-6. Arahkan domain ke IP server.
-7. Aktifkan SSL menggunakan Certbot.
-8. Gunakan database production yang sesuai, misalnya MySQL server di VPS.
-
----
-
-## File yang Boleh Diabaikan
-
-Jika proyek hanya dijalankan secara lokal di Windows dengan XAMPP, file berikut boleh diabaikan:
-
-```text
-docker-compose.yml
-infra/
-backend/Dockerfile
-frontend/Dockerfile
-DEPLOYMENT.md
-CONTRIBUTING.md
-CLEANUP_SUMMARY.md
-README_WINDOWS_MYSQL.md
-```
-
-File berikut jangan dihapus karena dibutuhkan aplikasi:
-
-```text
-backend/
-frontend/
-backend/package.json
-backend/package-lock.json
-backend/src/
-backend/.env
-frontend/package.json
-frontend/package-lock.json
-frontend/src/
-frontend/.env.local
-```
-
----
-
-## Ringkasan Menjalankan Aplikasi
-
-Urutan menjalankan aplikasi:
-
-1. Jalankan Apache dan MySQL dari XAMPP.
-2. Buat database `osp_mapper`.
-3. Jalankan backend:
-
-```powershell
-cd backend
-npm run start:dev
-```
-
-4. Jalankan frontend di terminal baru:
-
-```powershell
-cd frontend
-npm run dev
-```
-
-5. Buka aplikasi:
-
-```text
-http://localhost:3000
-```
-
-6. Login menggunakan akun default:
-
-```text
-Email    : admin@ospmapper.id
-Password : Admin@12345
-```
-
----
-
-## Status
-
-Proyek siap dijalankan secara lokal menggunakan Windows, VS Code, Node.js, dan MySQL XAMPP tanpa Docker.
+OSP Mapper Jagonet merupakan sistem manajemen aset jaringan fiber optik berbasis web. Sistem ini menyediakan dashboard, pengelolaan data aset, visualisasi peta, penggambaran jalur kabel, pengelolaan core kabel, autentikasi JWT, dokumentasi API Swagger, serta notifikasi aksi melalui toast. Sistem dapat dijalankan secara lokal menggunakan MySQL atau menggunakan Docker Compose untuk kebutuhan deployment.
