@@ -39,6 +39,14 @@ const formatRupiah = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value || 0);
 
+const hitungTotalHargaTiang = (
+  hargaPerUnit: number,
+  tinggiMeter: number,
+  jumlahUnit: number
+) => {
+  return Number(hargaPerUnit || 0) * Number(tinggiMeter || 0) * Number(jumlahUnit || 0);
+};
+
 export default function TiangPage() {
   const qc = useQueryClient();
 
@@ -91,10 +99,10 @@ export default function TiangPage() {
     mutationFn: (id: string) => tiangApi.remove(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['tiang'] });
-      toast.success('Tiang dihapus');
+      toast.success('Tiang berhasil dihapus');
     },
     onError: (e: any) =>
-  toast.error(e.response?.data?.message || 'Gagal menghapus tiang'),
+      toast.error(e.response?.data?.message || 'Gagal menghapus tiang'),
   });
 
   const openEdit = (tiang: any) => {
@@ -123,6 +131,12 @@ export default function TiangPage() {
       longitude: lng.toFixed(6),
     }));
   };
+
+  const totalHargaForm = hitungTotalHargaTiang(
+    Number(form.harga_per_unit || 0),
+    Number(form.tinggi_meter || 0),
+    Number(form.jumlah_tiang || 0)
+  );
 
   const selectedGeoData = useMemo(() => {
     if (!form.latitude.trim() || !form.longitude.trim()) {
@@ -196,7 +210,7 @@ export default function TiangPage() {
           <div className="eyebrow">Tiang / Pole (Besi)</div>
           <h2 className="display-title">Tiang Management</h2>
           <p className="section-subtitle">
-            Harga tiang dihitung berdasarkan jumlah tiang dikali harga per unit.
+            Harga tiang dihitung berdasarkan harga per (m) tinggi dikali jumlah unit tiang
           </p>
         </div>
 
@@ -247,7 +261,7 @@ export default function TiangPage() {
               ['Kode Tiang', 'kode_tiang', 'text', 'TG-MGT-001'],
               ['Nomor Tiang', 'nomor_tiang', 'text', '001'],
               ['Tinggi (m)', 'tinggi_meter', 'number', '7.0'],
-              ['Jumlah Tiang', 'jumlah_tiang', 'number', '1'],
+              ['Jumlah Unit', 'jumlah_tiang', 'number', '1'],
               ['Harga / Unit', 'harga_per_unit', 'number', '1250000'],
               ['Latitude', 'latitude', 'text', '-7.6493'],
               ['Longitude', 'longitude', 'text', '111.3382'],
@@ -262,7 +276,7 @@ export default function TiangPage() {
                   onChange={(e) =>
                     setForm((p) => ({
                       ...p,
-                      [key]: type === 'number' ? +e.target.value : e.target.value,
+                      [key]: type === 'number' ? Number(e.target.value) : e.target.value,
                     }))
                   }
                   required
@@ -296,48 +310,47 @@ export default function TiangPage() {
               </div>
 
               <div className="mt-1 text-xl font-extrabold">
-                {formatRupiah(
-                  Number(form.jumlah_tiang || 0) * Number(form.harga_per_unit || 0)
-                )}
+                {formatRupiah(totalHargaForm)}
               </div>
 
               <div className="text-xs opacity-80">
-                {Number(form.jumlah_tiang || 0).toLocaleString('id-ID')} tiang ×{' '}
-                {formatRupiah(Number(form.harga_per_unit || 0))}
+                {formatRupiah(Number(form.harga_per_unit || 0))} ×{' '}
+                {Number(form.tinggi_meter || 0).toLocaleString('id-ID')} m ×{' '}
+                {Number(form.jumlah_tiang || 0).toLocaleString('id-ID')} unit
               </div>
             </div>
 
             <div className="md:col-span-2">
-            <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <label className="label">Pilih Lokasi Tiang dari Map</label>
-                <p className="text-xs text-slate-500 dark:text-zinc-400">
-                  Klik pada map untuk mengisi Latitude dan Longitude secara otomatis.
-                </p>
+              <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <label className="label">Pilih Lokasi Tiang dari Map</label>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400">
+                    Klik pada map untuk mengisi Latitude dan Longitude secara otomatis.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setMapType((prev) => (prev === 'osm' ? 'satellite' : 'osm'))
+                  }
+                  className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
+                >
+                  <Globe size={14} />
+                  {mapType === 'osm' ? 'Satellite' : 'OSM'}
+                </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() =>
-                  setMapType((prev) => (prev === 'osm' ? 'satellite' : 'osm'))
-                }
-                className="inline-flex w-fit items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50 dark:border-white/10 dark:bg-white/5 dark:text-zinc-300 dark:hover:bg-white/10"
-              >
-                <Globe size={14} />
-                {mapType === 'osm' ? 'Satellite' : 'OSM'}
-              </button>
+              <div className="h-[360px] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
+                <OspMap
+                  geoData={selectedGeoData}
+                  activeLayers={activeLayers}
+                  mapType={mapType}
+                  onSelectAsset={() => {}}
+                  onMapClick={handleMapClick}
+                />
+              </div>
             </div>
-
-            <div className="h-[360px] overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10">
-              <OspMap
-                geoData={selectedGeoData}
-                activeLayers={activeLayers}
-                mapType={mapType}
-                onSelectAsset={() => {}}
-                onMapClick={handleMapClick}
-              />
-            </div>
-          </div>
 
             <div className="md:col-span-2">
               <label className="label">Catatan</label>
@@ -393,7 +406,7 @@ export default function TiangPage() {
                   'Kode',
                   'Site',
                   'Nomor',
-                  'Jumlah',
+                  'Jumlah Unit',
                   'Tinggi',
                   'Harga / Unit',
                   'Total',
@@ -415,9 +428,15 @@ export default function TiangPage() {
               )}
 
               {(data?.data || []).map((tiang: any) => {
-                const jumlahTiang = Number(tiang.jumlah_tiang || 1);
+                const jumlahUnit = Number(tiang.jumlah_tiang || 0);
+                const tinggiMeter = Number(tiang.tinggi_meter || 0);
                 const hargaPerUnit = Number(tiang.harga_per_unit || 0);
-                const totalHarga = jumlahTiang * hargaPerUnit;
+
+                const totalHarga = hitungTotalHargaTiang(
+                  hargaPerUnit,
+                  tinggiMeter,
+                  jumlahUnit
+                );
 
                 return (
                   <tr key={tiang.id}>
@@ -432,11 +451,13 @@ export default function TiangPage() {
                     <td className="text-slate-800 dark:text-zinc-200">
                       {tiang.nomor_tiang || '—'}
                     </td>
+
                     <td className="text-slate-600 dark:text-zinc-400">
-                      {jumlahTiang.toLocaleString('id-ID')}
+                      {jumlahUnit.toLocaleString('id-ID')}
                     </td>
+
                     <td className="text-slate-600 dark:text-zinc-400">
-                      {tiang.tinggi_meter} m
+                      {tinggiMeter.toLocaleString('id-ID')} m
                     </td>
 
                     <td className="text-slate-600 dark:text-zinc-400">
@@ -492,7 +513,7 @@ export default function TiangPage() {
 
               {!isLoading && !data?.data?.length && (
                 <tr>
-                  <td colSpan={10} className="py-12 text-center text-xs text-slate-400">
+                  <td colSpan={9} className="py-12 text-center text-xs text-slate-400">
                     Belum ada data tiang.
                   </td>
                 </tr>
